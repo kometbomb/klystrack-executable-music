@@ -14,7 +14,7 @@ EXTFLAGS = -nostdlib -s -DUSESDLMUTEXES -DSTEREOOUTPUT -DUSENATIVEAPIS
 
 # Uncomment the below line to enable the WAV writer
 
-#EXTFLAGS += -DENABLE_WAV_WRITER=1
+EXTFLAGS += -DENABLE_WAV_WRITER=1
 
 # Here are the feature flags you can use to disable unused features to minimize the size.
 
@@ -35,9 +35,9 @@ LIBS := -lwinmm -lmsvcrt -lgcc -lkernel32 -luser32
 EXTFLAGS += $(LIBS)
 
 all: $(EXECFILE) $(COMPRESSEDEXEC)
-	@echo "Song binary compiled"
-	@echo " - Binary written to '"$(EXECFILE)"'"
-	@echo " - Compressed binary written to '"$(COMPRESSEDEXEC)"'"
+	@echo "Song binary compiled from '$(SONGFILE)'"
+	@echo " - Binary written to '$(EXECFILE)' ($(shell ls $(EXECFILE) -l | awk '{print $$5}') bytes)"
+	@echo " - Compressed binary written to '$(COMPRESSEDEXEC)' ($(shell ls $(COMPRESSEDEXEC) -l | awk '{print $$5}') bytes)"
 
 $(COMPRESSEDEXEC): $(EXECFILE)
 	@cp $(EXECFILE) $(COMPRESSEDEXEC)
