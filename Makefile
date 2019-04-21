@@ -30,7 +30,8 @@ EXTFLAGS += -DENABLE_WAV_WRITER=1
 # You need kkrunchy for the compressed binary (http://www.farbrausch.de/~fg/kkrunchy/)
 # If it's not available, the step will be skipped and the song will not be compressed
 
-KKRUNCHY := kkrunchy_k7.exe -new
+KKRUNCHY := kkrunchy_k7.exe -best
+MAKE := make -j4
 LIBS := -lwinmm -lmsvcrt -lgcc -lkernel32 -luser32
 EXTFLAGS += $(LIBS)
 
@@ -45,7 +46,7 @@ $(COMPRESSEDEXEC): $(EXECFILE)
 
 $(EXECFILE): src/player.c temp/data.inc
 	@mkdir -p bin
-	@make -C ./klystron ksnd CFG=$(PROFILE) EXTFLAGS="$(EXTFLAGS)"
+	@$(MAKE) -C ./klystron ksnd CFG=$(PROFILE) EXTFLAGS="$(EXTFLAGS)"
 	@gcc -Os $(EXTFLAGS) -o $(EXECFILE) src/player.c -lksndstatic -Wall $(LIBS) -I ./klystron/src/lib -L ./klystron/bin.$(PROFILE)
 
 temp/data.inc: temp/bin2c.exe $(SONGFILE)
@@ -55,7 +56,7 @@ temp/data.inc: temp/bin2c.exe $(SONGFILE)
 	@echo "};" >> temp/data.inc
 
 clean:
-	@make -C ./klystron clean
+	@$(MAKE) -C ./klystron clean
 	@rm -rf bin temp $(COMPRESSEDEXEC) $(EXECFILE)
 
 temp/bin2c.exe: src/bin2c.c
