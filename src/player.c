@@ -4,6 +4,8 @@
 #include <conio.h>
 #include "../temp/data.inc"
 
+#define SAMPLE_RATE 44100
+
 // Edit this text to include your song name, your name etc.
 
 #define SONG_INFO_TEXT "Song is now playing.\n\nAny key to stop playing."
@@ -17,15 +19,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   int is_wave_writer = 0;
   char output_file[80] = {0};
 
-  if (sscanf(GetCommandLine(), "%*s %80s", output_file) == 1)
+  // Enable wav writer if output file is specified
+
+  if (sscanf(GetCommandLine(), "%*s %79s", output_file) == 1)
     is_wave_writer = 1;
 
   if (is_wave_writer)
-    player = KSND_CreatePlayerUnregistered(44100);
+    player = KSND_CreatePlayerUnregistered(SAMPLE_RATE);
   else
-    player = KSND_CreatePlayer(44100);
+    player = KSND_CreatePlayer(SAMPLE_RATE);
 #else
-  player = KSND_CreatePlayer(44100);
+  player = KSND_CreatePlayer(SAMPLE_RATE);
 #endif
 
   song = KSND_LoadSongFromMemory(player, data, sizeof(data));
@@ -48,12 +52,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   FILE *f = NULL;
   size_t riffsize = 0, chunksize = 0;
 
+  // Write the RIFF header with temporary size (will be finalized later)
+  // 44.1 kHz 16-bit stereo
+
   if (is_wave_writer)
   {
     f = fopen(output_file, "wb");
 
     const int channels = 2;
-
     unsigned int tmp = 0;
 
     fwrite("RIFF", 4, 1, f);
@@ -75,11 +81,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     fwrite(&channels, 2, 1, f);
 
-    tmp = 44100;
+    tmp = SAMPLE_RATE;
 
     fwrite(&tmp, 4, 1, f);
 
-    tmp = 44100 * channels * sizeof(buffer[0]);
+    tmp = SAMPLE_RATE * channels * sizeof(buffer[0]);
 
     fwrite(&tmp, 4, 1, f);
 
@@ -123,6 +129,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   }
 
 #if ENABLE_WAV_WRITER
+  // Finalize the wave header with the final file size
+
   if (is_wave_writer)
   {
     size_t sz = ftell(f) - 8;
@@ -139,6 +147,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     fclose(f);
   }
 #endif
+
+  // Note: not everything is deinitialized, the process exits anyways.
 
   ExitProcess(0);
 
